@@ -484,12 +484,13 @@ async function runDownload(url, mode, f, fname){
   dlAbort = new AbortController();
   const t0 = Date.now();
   let firstByteAt = 0;
-  // watchdog: no data in 25s → stop hanging at 0% and show fallbacks
+  // watchdog: no data in 12s → stop hanging at 0%.
+  // Direct mode then AUTO-switches to server so one tap always finishes.
   const watch = setTimeout(()=>{
     if(!firstByteAt && dlAbort){
       dlAbort.abort('connect-timeout');
     }
-  }, 25000);
+  }, 12000);
   try{
     dlStepUI(1);
     $('dlSub').textContent = viaTxt;
@@ -538,17 +539,29 @@ async function runDownload(url, mode, f, fname){
     $('dlBar').classList.remove('barber');
     if(e.name === 'AbortError' || e === 'connect-timeout' || (e.message && /connect-timeout/i.test(e.message))){
       const timedOut = !firstByteAt;
-      $('dlSub').textContent = timedOut ? 'Connect hochhe na (25s+) — connection slow ba source block.' : 'Cancel kora hoyeche.';
+      if(!timedOut){ $('dlSub').textContent = 'Cancel kora hoyeche.'; dlStepUI(-1); $('dlCancel').classList.add('hidden'); return; }
+      // timed out on DIRECT → auto-switch to server (one tap finishes the job)
+      if(mode === 'direct'){
+        $('dlSub').textContent = 'Direct source slow/blocked — server diye auto try korchi...';
+        toast('Direct atke geche — server diye anchi...');
+        return runDownload(proxyUrlFor(f), 'server', f, fname);
+      }
+      $('dlSub').textContent = 'Server o connect hote pareni. Abar try koro.';
       dlStepUI(-1); $('dlCancel').classList.add('hidden');
-      if(timedOut && mode === 'direct'){ showDlFallback('25s dhore kono data aseni. Nicher jekono ekta diye nao.'); }
+      showDlFallback('Server o connect hote pareni.');
       return;
     }
     const raw = String((e && e.message) || '');
     const blocked = /failed to fetch|networkerror|load failed|typeerror/i.test(raw);
+    if(blocked && mode === 'direct'){
+      // CORS / network block on direct → auto-switch to server
+      $('dlSub').textContent = 'Direct block — server diye auto try korchi...';
+      toast('Direct block — server diye anchi...');
+      return runDownload(proxyUrlFor(f), 'server', f, fname);
+    }
     $('dlSub').textContent = blocked ? 'Direct connection block/slow.' : friendlyErr(e);
     dlStepUI(-1); $('dlCancel').classList.add('hidden');
-    if(blocked && mode === 'direct'){ showDlFallback('Source direct connection dichhe na.'); }
-    else if(mode === 'server'){ toast(friendlyErr(e)); }
+    if(blocked){ showDlFallback('Source direct connection dichhe na.'); }
     else toast(friendlyErr(e));
   } finally { dlAbort = null; }
 }

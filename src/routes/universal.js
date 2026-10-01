@@ -150,6 +150,24 @@ function pickFormats(j, platform, originalUrl, videoId) {
   return [];
 }
 
+// YouTube oEmbed — super fast title/author/thumbnail, no cookies, no 429.
+// Makes Get Link near-instant; yt-dlp runs only as a short enrichment race.
+async function ytOembed(canonical, ms = 6000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => { try { ctrl.abort(); } catch {} }, ms);
+  try {
+    const r = await fetch('https://www.youtube.com/oembed?url=' + encodeURIComponent(canonical) + '&format=json', { signal: ctrl.signal });
+    if (!r.ok) throw new Error('oembed ' + r.status);
+    return await r.json(); // { title, author_name, thumbnail_url, ... }
+  } finally { clearTimeout(t); }
+}
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout after ' + ms + 'ms')), ms)),
+  ]);
+}
 // GET /api/info?url=...
 router.get('/', async (req, res) => {
   const originalUrl = (req.query.url || '').trim();
@@ -162,15 +180,21 @@ router.get('/', async (req, res) => {
   const canonical = platform === 'youtube' ? `https://www.youtube.com/watch?v=${videoId}` : originalUrl;
 
   let j = null;
-  try {
-    // For youtube, yt-dlp may 429 on Render — try quickly, but don't fail if it does
-    j = await ytDlpInfo(canonical, platform === 'youtube'
-      ? ['--extractor-args', 'youtube:player_client=web,android,ios,mweb']
-      : []);
-  } catch (e) {
-    console.warn('universal info yt-dlp failed:', e.message);
-    // For non-youtube, this is fatal-ish, but still return generic so frontend can try download
-    if (platform !== 'youtube') {
+  let meta = null; // fast oEmbed info (YouTube only)
+  if (platform === 'youtube') {
+    // Race: oEmbed answers in ~1s; yt-dlp gets max 7s for extras (duration/views/direct qualities)
+    const results = await Promise.allSettled([
+      withTimeout(ytOembed(canonical, 6000), 6500),
+      withTimeout(ytDlpInfo(canonical, ['--extractor-args', 'youtube:player_client=web,android,ios,mweb']), 7000),
+    ]);
+    if (results[0].status === 'fulfilled') meta = results[0].value;
+    if (results[1].status === 'fulfilled') j = results[1].value;
+    else console.warn('universal info yt-dlp failed:', results[1].reason?.message);
+  } else {
+    try {
+      j = await ytDlpInfo(canonical, []);
+    } catch (e) {
+      console.warn('universal info yt-dlp failed:', e.message);
       // No direct file URL available without metadata — frontend will show guidance instead of a dead button
       const titles = { tiktok: 'TikTok Video', instagram: 'Instagram Reel/Post', facebook: 'Facebook Video', pinterest: 'Pinterest Pin', twitter: 'X Video' };
       return res.json({
@@ -194,18 +218,18 @@ router.get('/', async (req, res) => {
       platform,
       url: canonical,
       id: videoId,
-      title: j?.title || 'YouTube Video',
+      title: j?.title || meta?.title || 'YouTube Video',
       description: (j?.description || '').slice(0, 500),
-      thumbnail: j?.thumbnail || `${thumbBase}/hqdefault.jpg`,
+      thumbnail: j?.thumbnail || meta?.thumbnail_url || `${thumbBase}/hqdefault.jpg`,
       thumbnails: { default: `${thumbBase}/default.jpg`, medium: `${thumbBase}/mqdefault.jpg`, high: `${thumbBase}/hqdefault.jpg`, maxres: `${thumbBase}/maxresdefault.jpg` },
       duration: j?.duration || null,
       durationFormatted: j?.duration_string || (j?.duration ? `${Math.floor(j.duration / 60)}:${String(j.duration % 60).padStart(2, '0')}` : ''),
-      uploader: j?.uploader || j?.channel || '',
+      uploader: j?.uploader || j?.channel || meta?.author_name || '',
       views: j?.view_count ?? null,
       uploadDate: j?.upload_date || null,
       formats: pickFormats(j, platform, canonical, videoId),
       embed: `https://www.youtube.com/embed/${videoId}`,
-      source: j ? 'yt-dlp+shruti' : 'shruti-only'
+      source: j ? 'yt-dlp+shruti' : (meta ? 'oembed+shruti' : 'shruti-only')
     });
   }
 

@@ -1,5 +1,5 @@
 /* Velix SW — cache shell, network-first for API */
-const CACHE = 'velix-v5';
+const CACHE = 'velix-v6';
 const SHELL = ['/', '/index.html', '/manifest.json', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
