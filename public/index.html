@@ -20,7 +20,11 @@ tailwind.config = { darkMode: 'class', theme: { extend: { colors: { ink: '#070b1
 </script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600&display=swap');
+html,body{max-width:100vw;overflow-x:clip}
+@supports not (overflow:clip){body{overflow-x:hidden}}
 body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
+img,video,iframe,svg{max-width:100%}
+section,header,footer,aside,div{min-width:0}
 .hand{font-family:'Caveat',cursive}
 .grad-text{background:linear-gradient(90deg,#2ea6ff,#7b5cff,#d63cff);-webkit-background-clip:text;background-clip:text;color:transparent}
 .grad-btn{background:linear-gradient(90deg,#1e9bff,#7b5cff)}
@@ -97,7 +101,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
     <div class="absolute -left-20 top-10 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full"></div>
     <div class="absolute right-0 top-0 w-80 h-80 bg-purple-600/20 blur-[100px] rounded-full"></div>
   </div>
-  <div class="max-w-7xl mx-auto px-4 pt-8 md:pt-14 pb-4 relative">
+  <div class="max-w-7xl mx-auto px-3 md:px-4 pt-5 md:pt-14 pb-4 relative w-full">
     <div class="hidden lg:block absolute left-2 top-24 w-56 opacity-90 float" style="--r:-8deg">
       <div class="glass rounded-2xl p-3 rotate-[-8deg]"><div class="bg-gradient-to-br from-blue-500/40 to-purple-500/20 rounded-xl h-28 flex items-center justify-center"><i class="fa-brands fa-youtube text-4xl text-white/40"></i></div></div>
       <div class="hand text-2xl text-slate-400 mt-2 ml-4">Multiple<br>Platforms <i class="fa-solid fa-arrow-right text-lg"></i></div>
@@ -109,12 +113,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
     </div>
 
     <div class="text-center max-w-3xl mx-auto">
-      <h1 class="text-3xl md:text-6xl font-extrabold leading-tight tracking-tight">Fast &amp; Easy <span class="grad-text">Video Downloader</span></h1>
+      <h1 class="text-[1.65rem] leading-[1.2] md:text-6xl md:leading-tight font-extrabold tracking-tight px-1">Fast &amp; Easy <span class="grad-text">Video Downloader</span></h1>
       <p class="text-white/60 mt-3 text-sm md:text-lg">Download videos and audio from YouTube, TikTok, Instagram, Facebook, Pinterest and more.<br class="hidden md:block"> Just paste the link, choose your format and hit download!</p>
     </div>
 
     <!-- Search bar -->
-    <div class="max-w-3xl mx-auto mt-6">
+    <div class="max-w-3xl mx-auto mt-4 md:mt-6 w-full">
       <div class="flex items-center gap-2 bg-[#0c142c]/90 border border-sky-500/40 rounded-2xl p-1.5 shadow-[0_0_40px_-10px_#2ea6ff66]">
         <div class="flex-1 flex items-center gap-2.5 px-3 min-w-0">
           <i class="fa-solid fa-link text-sky-300 shrink-0"></i>
@@ -126,30 +130,30 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
       <div id="detectHint" class="text-center text-xs text-white/40 mt-2 h-4"></div>
 
       <!-- Platforms -->
-      <div class="flex justify-center gap-3 md:gap-8 mt-3 overflow-x-auto no-scrollbar pb-2 px-2">
-        <button data-p="youtube" class="platform-btn active flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-blue-500">
-          <span class="w-10 h-10 rounded-xl bg-[#ff0000] flex items-center justify-center text-xl"><i class="fa-brands fa-youtube text-white"></i></span>
-          <span class="text-xs md:text-sm">YouTube</span>
+      <div class="flex justify-start sm:justify-center gap-2 md:gap-8 mt-3 overflow-x-auto no-scrollbar pb-2 px-1 w-full">
+        <button data-p="youtube" class="platform-btn active flex flex-col items-center gap-1.5 min-w-[62px] md:min-w-[72px] shrink-0 pb-2 border-b-[3px] border-blue-500">
+          <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-[#ff0000] flex items-center justify-center text-lg md:text-xl"><i class="fa-brands fa-youtube text-white"></i></span>
+          <span class="text-[11px] md:text-sm">YouTube</span>
         </button>
-        <button data-p="tiktok" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
-          <span class="w-10 h-10 rounded-xl bg-black border border-white/15 flex items-center justify-center text-xl"><i class="fa-brands fa-tiktok text-white"></i></span>
-          <span class="text-xs md:text-sm">TikTok</span>
+        <button data-p="tiktok" class="platform-btn flex flex-col items-center gap-1.5 min-w-[62px] md:min-w-[72px] shrink-0 pb-2 border-b-[3px] border-transparent">
+          <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-black border border-white/15 flex items-center justify-center text-lg md:text-xl"><i class="fa-brands fa-tiktok text-white"></i></span>
+          <span class="text-[11px] md:text-sm">TikTok</span>
         </button>
-        <button data-p="instagram" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
-          <span class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)"><i class="fa-brands fa-instagram text-white"></i></span>
-          <span class="text-xs md:text-sm">Instagram</span>
+        <button data-p="instagram" class="platform-btn flex flex-col items-center gap-1.5 min-w-[62px] md:min-w-[72px] shrink-0 pb-2 border-b-[3px] border-transparent">
+          <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center text-lg md:text-xl" style="background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)"><i class="fa-brands fa-instagram text-white"></i></span>
+          <span class="text-[11px] md:text-sm">Instagram</span>
         </button>
-        <button data-p="facebook" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
-          <span class="w-10 h-10 rounded-xl bg-[#1877f2] flex items-center justify-center text-xl"><i class="fa-brands fa-facebook-f text-white"></i></span>
-          <span class="text-xs md:text-sm">Facebook</span>
+        <button data-p="facebook" class="platform-btn flex flex-col items-center gap-1.5 min-w-[62px] md:min-w-[72px] shrink-0 pb-2 border-b-[3px] border-transparent">
+          <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-[#1877f2] flex items-center justify-center text-lg md:text-xl"><i class="fa-brands fa-facebook-f text-white"></i></span>
+          <span class="text-[11px] md:text-sm">Facebook</span>
         </button>
-        <button data-p="pinterest" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
-          <span class="w-10 h-10 rounded-xl bg-[#e60023] flex items-center justify-center text-xl"><i class="fa-brands fa-pinterest text-white"></i></span>
-          <span class="text-xs md:text-sm">Pinterest</span>
+        <button data-p="pinterest" class="platform-btn flex flex-col items-center gap-1.5 min-w-[62px] md:min-w-[72px] shrink-0 pb-2 border-b-[3px] border-transparent">
+          <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-[#e60023] flex items-center justify-center text-lg md:text-xl"><i class="fa-brands fa-pinterest text-white"></i></span>
+          <span class="text-[11px] md:text-sm">Pinterest</span>
         </button>
-        <button onclick="toast('X (Twitter) coming soon — YT / TT / IG / FB / Pinterest supported')" class="flex flex-col items-center gap-1.5 min-w-[72px] pb-2 opacity-70">
-          <span class="w-10 h-10 rounded-xl bg-black border border-white/15 flex items-center justify-center text-xl font-bold">𝕏</span>
-          <span class="text-xs md:text-sm">X (Twitter)</span>
+        <button onclick="toast('X (Twitter) coming soon — YT / TT / IG / FB / Pinterest supported')" class="flex flex-col items-center gap-1.5 min-w-[62px] md:min-w-[72px] shrink-0 pb-2 opacity-70">
+          <span class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-black border border-white/15 flex items-center justify-center text-lg md:text-xl font-bold">𝕏</span>
+          <span class="text-[11px] md:text-sm">X (Twitter)</span>
         </button>
       </div>
       <div class="flex gap-2 justify-center flex-wrap mt-2 text-[11px]">
@@ -166,7 +170,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
 
 <!-- Features -->
 <section class="border-t border-white/5 mt-4">
-  <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 md:grid-cols-5 gap-5">
+  <div class="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-6 grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-5 w-full">
     <div class="flex md:block gap-3"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-bolt"></i></div><div><b class="text-sm">Fast Download</b><p class="text-xs text-white/50 mt-1">Get your files in seconds with high-speed servers.</p></div></div>
     <div class="flex md:block gap-3 md:border-l md:border-white/10 md:pl-5"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-shield-halved"></i></div><div><b class="text-sm">High Quality</b><p class="text-xs text-white/50 mt-1">Choose from multiple resolutions and formats.</p></div></div>
     <div class="flex md:block gap-3 md:border-l md:border-white/10 md:pl-5"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-mobile-screen"></i></div><div><b class="text-sm">Works on Any Device</b><p class="text-xs text-white/50 mt-1">Desktop, tablet or mobile — anytime, anywhere.</p></div></div>
@@ -176,8 +180,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
 </section>
 
 <!-- Result + Supported -->
-<section class="max-w-7xl mx-auto px-4 pb-8 grid lg:grid-cols-[1fr_340px] gap-4">
-  <div class="glass rounded-2xl p-3 md:p-5 min-h-[280px]">
+<section class="max-w-7xl mx-auto px-3 md:px-4 pb-8 grid lg:grid-cols-[minmax(0,1fr)_340px] gap-4 w-full">
+  <div class="glass rounded-2xl p-3 md:p-5 min-h-[280px] min-w-0 w-full">
     <!-- Loader -->
     <div id="loader" class="hidden py-14 text-center">
       <div class="inline-block w-10 h-10 border-[3px] border-white/15 border-t-sky-400 rounded-full animate-spin"></div>
@@ -204,15 +208,15 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
           <button id="previewPlay" class="absolute inset-0 m-auto w-14 h-14 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-2xl hover:scale-105 transition"><i class="fa-solid fa-play ml-1"></i></button>
         </div>
         <div class="min-w-0">
-          <h3 id="rTitle" class="font-bold text-base md:text-lg leading-snug line-clamp-2"></h3>
+          <h3 id="rTitle" class="font-bold text-base md:text-lg leading-snug line-clamp-2 break-words"></h3>
           <p id="rMeta" class="text-white/45 text-xs md:text-sm mt-1"></p>
           <p id="rWarn" class="hidden text-amber-300/90 text-xs mt-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2"></p>
           <div id="qBtns" class="flex flex-wrap gap-2 mt-4"></div>
           <button id="dlNow" class="grad-btn w-full mt-3 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-[15px]"><i class="fa-solid fa-download"></i> Download Now</button>
-          <div class="flex gap-2 mt-2">
-            <button id="copyBtn" class="flex-1 bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10"><i class="fa-regular fa-copy mr-1"></i>Copy link</button>
-            <button id="shareBtn" class="flex-1 bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10"><i class="fa-solid fa-share-nodes mr-1"></i>Share</button>
-            <a id="watchBtn" href="#" target="_blank" class="flex-1 text-center bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10">Open original <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
+          <div class="flex flex-col min-[420px]:flex-row gap-2 mt-2">
+            <button id="copyBtn" class="flex-1 min-w-0 bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10 truncate"><i class="fa-regular fa-copy mr-1"></i>Copy link</button>
+            <button id="shareBtn" class="flex-1 min-w-0 bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10 truncate"><i class="fa-solid fa-share-nodes mr-1"></i>Share</button>
+            <a id="watchBtn" href="#" target="_blank" class="flex-1 min-w-0 text-center bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10 truncate">Open original <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
           </div>
           <div id="dlBox" class="hidden mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
             <div class="flex items-center gap-3">
@@ -250,7 +254,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
     </div>
   </div>
 
-  <aside id="sites" class="glass rounded-2xl p-5 h-fit">
+  <aside id="sites" class="glass rounded-2xl p-4 md:p-5 h-fit min-w-0 w-full">
     <h3 class="font-bold flex items-center gap-2"><i class="fa-solid fa-globe text-sky-400"></i> Supported Sites</h3>
     <div class="mt-3 space-y-1 text-sm">
       <a href="#home" onclick="setPlat('youtube')" class="flex items-center gap-3 py-2.5 border-b border-white/5 hover:bg-white/5 rounded-lg px-2"><span class="w-8 h-8 rounded-full bg-[#ff0000] flex items-center justify-center"><i class="fa-brands fa-youtube text-white"></i></span><span class="font-semibold w-24">YouTube</span><span class="flex-1 text-white/40 text-xs">Videos, Shorts, Playlists</span><i class="fa-solid fa-chevron-right text-white/30 text-xs"></i></a>
@@ -267,14 +271,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
 </section>
 
 <!-- How -->
-<section class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-3 pb-8">
+<section class="max-w-7xl mx-auto px-3 md:px-4 grid md:grid-cols-3 gap-3 pb-8 w-full">
   <div class="glass rounded-2xl p-5"><div class="text-sky-400 font-extrabold text-sm">STEP 1</div><b>Copy video link</b><p class="text-white/50 text-sm mt-1">Open YouTube / TikTok / Instagram / Facebook / Pinterest → Share → Copy link.</p></div>
   <div class="glass rounded-2xl p-5"><div class="text-violet-400 font-extrabold text-sm">STEP 2</div><b>Paste &amp; Get Link</b><p class="text-white/50 text-sm mt-1">Paste above and press Get Link. We fetch title, thumbnail &amp; qualities.</p></div>
   <div class="glass rounded-2xl p-5"><div class="text-pink-400 font-extrabold text-sm">STEP 3</div><b>Download Now</b><p class="text-white/50 text-sm mt-1">Pick quality and tap Download Now — file tomar nijer internet diye sorasori download hobe, ei page ei.</p></div>
 </section>
 
 <!-- FAQ -->
-<section id="faq" class="max-w-4xl mx-auto px-4 pb-8">
+<section id="faq" class="max-w-4xl mx-auto px-3 md:px-4 pb-8 w-full">
   <h2 class="text-2xl font-extrabold text-center">FAQ</h2>
   <div class="mt-4 space-y-2" id="faqBox">
     <details class="glass rounded-xl px-4 py-3"><summary class="font-semibold text-sm cursor-pointer">Which sites are supported?</summary><p class="text-white/55 text-sm mt-2">YouTube (video, shorts, music → MP3/MP4), TikTok (HD, no watermark), Instagram (reel, post, story — public only), Facebook (video, reel — public only), Pinterest (video pin + image pin HD).</p></details>
@@ -286,7 +290,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
 </section>
 
 <!-- Contact -->
-<section id="contact" class="max-w-4xl mx-auto px-4 pb-10">
+<section id="contact" class="max-w-4xl mx-auto px-3 md:px-4 pb-10 w-full">
   <div class="glass rounded-2xl p-6 text-center">
     <h2 class="text-xl font-extrabold">Contact / Report a link</h2>
     <p class="text-white/50 text-sm mt-1">Link not working? Send the URL + platform. We fix extractors fast.</p>
@@ -303,7 +307,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
   <span class="text-white/20">For personal use. Respect creators &amp; platform TOS.</span>
 </footer>
 
-<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden"><div class="bg-[#101a33] border border-white/15 px-5 py-3 rounded-2xl text-sm shadow-2xl" id="toastMsg"></div></div>
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden w-max max-w-[92vw]"><div class="bg-[#101a33] border border-white/15 px-5 py-3 rounded-2xl text-sm shadow-2xl text-center break-words" id="toastMsg"></div></div>
 
 <script>
 const $ = id => document.getElementById(id);

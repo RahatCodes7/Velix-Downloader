@@ -51,7 +51,15 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/storage', (req, res) => {
-  try { res.json(require('./utils/janitor').getStatus()); }
+  try {
+    const out = require('./utils/janitor').getStatus();
+    try {
+      const cookies = require('./utils/cookies');
+      const p = cookies.getCookiesPath();
+      out.cookies = { configured: !!p, hasFile: !!(p && require('fs').existsSync(p)) };
+    } catch (e) { out.cookies = { configured: false, error: e.message }; }
+    res.json(out);
+  }
   catch (e) { res.status(500).json({ error: 'janitor unavailable', details: e.message }); }
 });
 
