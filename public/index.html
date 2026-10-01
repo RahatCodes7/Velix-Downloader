@@ -37,6 +37,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
 #installBar{display:none}
 @keyframes float{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-8px) rotate(var(--r,0deg))}}
 .float{animation:float 5s ease-in-out infinite}
+@keyframes flashRing{0%{box-shadow:0 0 0 0 rgba(56,189,248,.65)}100%{box-shadow:0 0 0 22px rgba(56,189,248,0)}}
+.flash{animation:flashRing .9s ease-out 2;border-color:rgba(56,189,248,.6)!important}
+@keyframes barber{from{background-position:0 0}to{background-position:40px 0}}
+.barber{background-image:linear-gradient(45deg,rgba(255,255,255,.3) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.3) 50%,rgba(255,255,255,.3) 75%,transparent 75%)!important;background-size:40px 40px!important;animation:barber .8s linear infinite}
+@keyframes spinBtn{to{transform:rotate(360deg)}}
+.spin{animation:spinBtn .8s linear infinite;display:inline-block}
+@keyframes pulseGlow{0%,100%{opacity:1}50%{opacity:.55}}
+.fetching{animation:pulseGlow 1.2s ease-in-out infinite}
 </style>
 </head>
 <body class="bg-[#070b18] text-white min-h-screen antialiased">
@@ -224,8 +232,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
             <div class="flex justify-between text-[11px] text-white/50 mt-1"><span id="dlText">0%</span><span id="dlMb"></span></div>
             <div id="dlDone" class="hidden mt-2 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-3 py-2.5 text-xs text-emerald-200"></div>
             <div id="dlAlt" class="hidden mt-2 bg-amber-500/10 border border-amber-500/25 rounded-xl px-3 py-2.5 text-xs text-amber-200">
-              <div>Source direct connection block koreche. Nicher button e chap dile file ta browser-e khulbe — sekhan theke save koro. Eta tomar file-eri link, onno kono site noy.</div>
-              <a id="dlAltLink" href="#" target="_blank" rel="noopener" class="inline-block mt-2 grad-btn px-4 py-2 rounded-xl font-bold text-white"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>File kholo</a>
+              <div id="dlAltText">Source direct connection block koreche. Nicher jekono ekta diye nao — dutoi tomar file-eri link, onno kono site noy.</div>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <a id="dlAltLink" href="#" target="_blank" rel="noopener" class="grad-btn px-4 py-2 rounded-xl font-bold text-white"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>File kholo</a>
+                <button id="dlServerBtn" class="bg-white/10 hover:bg-white/20 border border-white/15 px-4 py-2 rounded-xl font-bold text-white"><i class="fa-solid fa-server mr-1"></i>Server diye try koro</button>
+              </div>
             </div>
           </div>
           <div id="ytEmbedWrap" class="hidden mt-3 aspect-video bg-black rounded-xl overflow-hidden"><iframe id="ytEmbed" class="w-full h-full" frameborder="0" allowfullscreen></iframe></div>
@@ -321,19 +332,40 @@ document.querySelectorAll('.sample').forEach(b=> b.onclick=()=>{ input.value=b.d
 input.addEventListener('keydown', e=>{ if(e.key==='Enter') doFetch(); });
 goBtn.onclick = doFetch;
 
+const goBtnHTML = goBtn.innerHTML;
+function goBtnLoading(on, txt){
+  if(on){ goBtn.disabled = true; goBtn.classList.add('opacity-70'); goBtn.innerHTML = '<span class="spin"><i class="fa-solid fa-circle-notch"></i></span> ' + (txt || 'Reading...'); }
+  else { goBtn.disabled = false; goBtn.classList.remove('opacity-70'); goBtn.innerHTML = goBtnHTML; }
+}
+const FETCH_MSGS = ['Server er sathe connect hochhe...', 'Video info porchi...', 'Thumbnail + quality list toiri hochhe...'];
+let fetchMsgTimer = null;
+
 async function doFetch(){
   const url = input.value.trim();
   if(!url) return toast('Paste a video link first');
   if(!/^https?:\/\//i.test(url) && !/^[a-zA-Z0-9_-]{11}$/.test(url)) return toast('That does not look like a link');
+  if(goBtn.disabled) return; // already fetching
   $('emptyState').classList.add('hidden'); $('resultCard').classList.add('hidden'); $('loader').classList.remove('hidden');
-  $('loaderText').textContent = 'Fetching video info...';
+  // animation: button spinner + cycling status + scroll to loader so user SEES progress
+  goBtnLoading(true, 'Reading...');
+  let mi = 0;
+  $('loaderText').textContent = FETCH_MSGS[0]; $('loader').classList.add('fetching');
+  clearInterval(fetchMsgTimer);
+  fetchMsgTimer = setInterval(()=>{ mi = (mi + 1) % FETCH_MSGS.length; $('loaderText').textContent = FETCH_MSGS[mi]; }, 1600);
+  $('loader').scrollIntoView({ behavior: 'smooth', block: 'center' });
   try{
-    const r = await fetch('/api/info?url='+encodeURIComponent(url));
+    const r = await fetch('/api/info?url=' + encodeURIComponent(url));
     const d = await readJsonSafe(r); // never throws SyntaxError — always friendly message
-    if(!r.ok) throw new Error(d.error || d.details || ('Server error '+r.status));
+    if(!r.ok) throw new Error(d.error || d.details || ('Server error ' + r.status));
     current = d; renderResult(d); saveHist(d);
+    // redirect: auto-scroll to the result card + flash highlight so it's obvious
+    const card = $('resultCard');
+    card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+    setTimeout(()=>card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    setTimeout(()=>card.classList.remove('flash'), 2200);
+    toast('Link ready ✓ — quality beche Download chap daw');
   }catch(e){ $('loader').classList.add('hidden'); $('emptyState').classList.remove('hidden'); toast(friendlyErr(e)); }
-  finally{ $('loader').classList.add('hidden'); }
+  finally{ clearInterval(fetchMsgTimer); $('loader').classList.add('hidden'); $('loader').classList.remove('fetching'); goBtnLoading(false); }
 }
 
 // Read a fetch Response as JSON WITHOUT crashing on plain-text bodies
@@ -386,57 +418,82 @@ function renderResult(d){
     b.onclick=()=>{ selectedFmt=f; [...qb.children].forEach((c,j)=>{ c.className='px-4 py-2 rounded-xl text-xs font-bold border transition '+(d.formats[j]===f?'chip-active bg-sky-500 border-sky-500':'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'); }); };
     qb.appendChild(b);
   });
-  $('resultCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+  // scrolling + flash handled by doFetch after render
 }
 
 let dlAbort = null;
 $('dlCancel').onclick = ()=>{ if(dlAbort) dlAbort.abort(); };
 function dlStepUI(active){
-  // active: 0..2 running, 3 = all done, -1 = error
-  document.querySelectorAll('#dlSteps .step').forEach(el=>{
-    const n = +el.dataset.s, dot = el.querySelector('.dot');
-    const base = 'w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] shrink-0 ';
-    if(active === 3 || n < active){
-      el.className = 'step flex items-center gap-2 text-emerald-300 font-semibold';
-      dot.className = base + 'bg-emerald-500 text-white'; dot.innerHTML = '<i class="fa-solid fa-check"></i>';
-    } else if(n === active){
-      el.className = 'step flex items-center gap-2 text-white font-semibold';
-      dot.className = base + 'border border-sky-400'; dot.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse inline-block"></span>';
-    } else {
-      el.className = 'step flex items-center gap-2 text-white/35';
-      dot.className = base + 'border border-white/20'; dot.innerHTML = '';
+  // active: 0..2 running, 3 = all done, -1 = error. Fully null-safe — never throws.
+  try{
+    const steps = document.querySelectorAll('#dlSteps .step');
+    if(!steps.length) return;
+    steps.forEach(el=>{
+      if(!el) return;
+      const n = +(el.dataset ? el.dataset.s : -1);
+      const dot = el.querySelector ? el.querySelector('.dot') : null;
+      const base = 'w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] shrink-0 ';
+      const setDot = (cls, html)=>{ if(dot){ dot.className = base + cls; dot.innerHTML = html || ''; } };
+      if(active === 3 || n < active){
+        el.className = 'step flex items-center gap-2 text-emerald-300 font-semibold';
+        setDot('bg-emerald-500 text-white', '<i class="fa-solid fa-check"></i>');
+      } else if(n === active){
+        el.className = 'step flex items-center gap-2 text-white font-semibold';
+        setDot('border border-sky-400', '<span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse inline-block"></span>');
+      } else {
+        el.className = 'step flex items-center gap-2 text-white/35';
+        setDot('border border-white/20', '');
+      }
+    });
+    if(active === -1){
+      const el = document.querySelector('#dlSteps .step[data-s="1"]');
+      if(el){
+        el.className = 'step flex items-center gap-2 text-red-300 font-semibold';
+        const d = el.querySelector ? el.querySelector('.dot') : null;
+        if(d){ d.className = 'w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] shrink-0 bg-red-500 text-white'; d.innerHTML = '<i class="fa-solid fa-xmark"></i>'; }
+      }
     }
-  });
-  if(active === -1){
-    const el = document.querySelector('#dlSteps .step[data-s="1"]');
-    if(el){ el.className = 'step flex items-center gap-2 text-red-300 font-semibold'; const d = el.querySelector('.dot'); d.className = 'w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] shrink-0 bg-red-500 text-white'; d.innerHTML = '<i class="fa-solid fa-xmark"></i>'; }
-  }
+  }catch(err){ try{ console.warn('step ui:', err.message); }catch{} }
 }
 const MIME = { mp4:'video/mp4', mov:'video/quicktime', webm:'video/webm', mp3:'audio/mpeg', m4a:'audio/mp4', jpg:'image/jpeg', png:'image/png', webp:'image/webp' };
 function fmtMB(b){ return (b/1048576).toFixed(1)+' MB'; }
 function fmtSpeed(bps){ if(bps>1048576) return (bps/1048576).toFixed(1)+' MB/s'; return Math.max(1,Math.round(bps/1024))+' KB/s'; }
 
-$('dlNow').onclick = async ()=>{
-  if(!current) return toast('Age ekta link paste kore Get Link chap daw');
-  if(!selectedFmt){ toast('Ei link er download option pawa jayni — public link try koro'); return; }
-  const f = selectedFmt;
-  const directUrl = f.url; // always source-direct: user's internet, never the server, never a redirect site
-  const base = ((current.title||'velix-download').replace(/[^\w\-\s\u0980-\u09FF]+/g,'').trim().slice(0,50)) || 'velix-download';
-  const fname = base + '.' + (f.ext || 'mp4');
+// Server-proxy URL (fallback only — used ONLY if user taps "Server diye try koro")
+function proxyUrlFor(f){
+  const u = (current && current.url) || input.value.trim();
+  if(/^shruti-mp3/.test(f.id)) return '/api/shruti/' + encodeURIComponent(current.id || u) + '?type=audio';
+  if(/^shruti-mp4/.test(f.id)) return '/api/shruti/' + encodeURIComponent(current.id || u) + '?type=video';
+  if(f.id && !/^yt-/.test(f.id)) return '/api/dl?url=' + encodeURIComponent(u) + '&format_id=' + encodeURIComponent(f.id);
+  if(/^\d{3,4}p$/.test(f.quality || '')) return '/api/dl?url=' + encodeURIComponent(u) + '&quality=' + f.quality;
+  return '/api/dl?url=' + encodeURIComponent(u) + '&format_id=best';
+}
 
-  // reset UI
+async function runDownload(url, mode, f, fname){
+  // mode: 'direct' (user internet) | 'server' (fallback proxy)
+  const viaTxt = mode === 'server' ? 'Server diye download hochhe (ektu slow hote pare)...' : 'Tomar internet diye download hochhe...';
   $('dlBox').classList.remove('hidden'); $('dlDone').classList.add('hidden'); $('dlAlt').classList.add('hidden');
-  $('dlCancel').classList.remove('hidden'); $('dlBar').style.width = '2%';
-  $('dlName').textContent = fname; $('dlText').textContent = '0%'; $('dlMb').textContent = '';
-  $('dlSub').textContent = 'Source er sathe connect hochhe...'; dlStepUI(0);
-  $('dlBox').scrollIntoView({behavior:'smooth', block:'nearest'});
+  $('dlCancel').classList.remove('hidden');
+  $('dlBar').style.width = '4%'; $('dlBar').classList.add('barber');
+  $('dlText').textContent = 'connecting...'; $('dlMb').textContent = '';
+  $('dlName').textContent = fname;
+  $('dlSub').textContent = mode === 'server' ? 'Server er sathe connect hochhe...' : 'Source er sathe connect hochhe...';
+  dlStepUI(0);
+  $('dlBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   dlAbort = new AbortController();
   const t0 = Date.now();
+  let firstByteAt = 0;
+  // watchdog: no data in 25s → stop hanging at 0% and show fallbacks
+  const watch = setTimeout(()=>{
+    if(!firstByteAt && dlAbort){
+      dlAbort.abort('connect-timeout');
+    }
+  }, 25000);
   try{
     dlStepUI(1);
-    $('dlSub').textContent = 'Tomar internet diye download hochhe...';
-    const r = await fetch(directUrl, { signal: dlAbort.signal });
+    $('dlSub').textContent = viaTxt;
+    const r = await fetch(url, { signal: dlAbort.signal });
     if(!r.ok){
       const j = await readJsonSafe(r);
       const err = new Error(j.error || j.details || ('Source error ' + r.status));
@@ -448,40 +505,75 @@ $('dlNow').onclick = async ()=>{
     while(true){
       const { done, value } = await reader.read();
       if(done) break;
+      if(!firstByteAt){ firstByteAt = Date.now(); clearTimeout(watch); $('dlBar').classList.remove('barber'); }
       chunks.push(value); got += value.length;
       const secs = Math.max(0.5, (Date.now() - t0) / 1000);
       if(total){ const pc = Math.min(99, Math.round(got / total * 100)); $('dlBar').style.width = pc + '%'; $('dlText').textContent = pc + '%'; }
-      else { $('dlBar').style.width = '65%'; $('dlText').textContent = fmtMB(got); }
+      else { $('dlText').textContent = fmtMB(got); }
+      if(!total && got > 0) $('dlBar').style.width = Math.min(95, 10 + (got / 1048576) * 2) + '%';
       $('dlMb').textContent = fmtMB(got) + (total ? ' / ' + fmtMB(total) : '') + ' • ' + fmtSpeed(got / secs);
-      $('dlSub').textContent = 'Download hochhe... ' + fmtMB(got) + (total ? ' / ' + fmtMB(total) : '');
+      $('dlSub').textContent = (mode === 'server' ? 'Server theke asche... ' : 'Download hochhe... ') + fmtMB(got) + (total ? ' / ' + fmtMB(total) : '');
     }
+    clearTimeout(watch);
+    if(!got) throw new Error('Empty file — source theke data aseni. Onno quality try koro.');
     // save to device — stays on this page, no redirect
     dlStepUI(2); $('dlSub').textContent = 'Device e save hochhe...';
     const blob = new Blob(chunks, { type: MIME[f.ext] || 'application/octet-stream' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = fname;
     document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 10000);
+    setTimeout(()=>{ try{ URL.revokeObjectURL(a.href); }catch{} }, 10000);
 
     dlStepUI(3);
+    $('dlBar').classList.remove('barber');
     $('dlBar').style.width = '100%'; $('dlText').textContent = '100%';
     $('dlMb').textContent = fmtMB(got);
     $('dlSub').textContent = 'Complete ✓ — ' + fmtMB(got);
     $('dlCancel').classList.add('hidden');
     const dd = $('dlDone'); dd.classList.remove('hidden');
-    dd.innerHTML = '<b>✓ Download complete!</b><br>File tomar internet diye sorasori download hoyeche: <b>' + fname.replace(/</g,'&lt;') + '</b> (' + fmtMB(got) + '). Phone er <b>Downloads / Gallery</b> te check koro.';
+    dd.innerHTML = '<b>✓ Download complete!</b><br>File ' + (mode === 'server' ? 'server hoye' : 'tomar internet diye sorasori') + ' download hoyeche: <b>' + fname.replace(/</g, '&lt;') + '</b> (' + fmtMB(got) + '). Phone er <b>Downloads / Gallery</b> te check koro.';
     toast('Download complete ✓');
   }catch(e){
-    if(e.name === 'AbortError'){ $('dlSub').textContent = 'Cancel kora hoyeche.'; dlStepUI(-1); $('dlCancel').classList.add('hidden'); return; }
+    clearTimeout(watch);
+    $('dlBar').classList.remove('barber');
+    if(e.name === 'AbortError' || e === 'connect-timeout' || (e.message && /connect-timeout/i.test(e.message))){
+      const timedOut = !firstByteAt;
+      $('dlSub').textContent = timedOut ? 'Connect hochhe na (25s+) — connection slow ba source block.' : 'Cancel kora hoyeche.';
+      dlStepUI(-1); $('dlCancel').classList.add('hidden');
+      if(timedOut && mode === 'direct'){ showDlFallback('25s dhore kono data aseni. Nicher jekono ekta diye nao.'); }
+      return;
+    }
     const raw = String((e && e.message) || '');
     const blocked = /failed to fetch|networkerror|load failed|typeerror/i.test(raw);
-    $('dlSub').textContent = blocked ? 'Direct connection block hoyeche.' : raw.slice(0,160);
+    $('dlSub').textContent = blocked ? 'Direct connection block/slow.' : friendlyErr(e);
     dlStepUI(-1); $('dlCancel').classList.add('hidden');
-    if(blocked){
-      $('dlAlt').classList.remove('hidden'); $('dlAltLink').href = directUrl;
-      toast('Direct block — File kholo button use koro');
-    } else toast(friendlyErr(e));
+    if(blocked && mode === 'direct'){ showDlFallback('Source direct connection dichhe na.'); }
+    else if(mode === 'server'){ toast(friendlyErr(e)); }
+    else toast(friendlyErr(e));
   } finally { dlAbort = null; }
+}
+
+function showDlFallback(note){
+  $('dlAltText').textContent = note + ' Nicher jekono ekta diye nao — dutoi tomar file-eri link, onno kono site noy.';
+  $('dlAlt').classList.remove('hidden');
+  $('dlAltLink').href = (selectedFmt && selectedFmt.url) || '#';
+  toast('Direct atke geche — fallback option dekho');
+}
+
+$('dlServerBtn').onclick = async ()=>{
+  if(!selectedFmt) return;
+  const f = selectedFmt;
+  const base = ((current.title || 'velix-download').replace(/[^\w\-\s\u0980-\u09FF]+/g, '').trim().slice(0, 50)) || 'velix-download';
+  toast('Server diye try korchi...');
+  runDownload(proxyUrlFor(f), 'server', f, base + '.' + (f.ext || 'mp4'));
+};
+
+$('dlNow').onclick = async ()=>{
+  if(!current) return toast('Age ekta link paste kore Get Link chap daw');
+  if(!selectedFmt){ toast('Ei link er download option pawa jayni — public link try koro'); return; }
+  const f = selectedFmt;
+  const base = ((current.title || 'velix-download').replace(/[^\w\-\s\u0980-\u09FF]+/g, '').trim().slice(0, 50)) || 'velix-download';
+  runDownload(f.url, 'direct', f, base + '.' + (f.ext || 'mp4')); // source-direct: user's internet first
 };
 $('copyBtn').onclick=()=>{ navigator.clipboard.writeText(input.value); toast('Link copied'); };
 $('shareBtn').onclick=async()=>{ if(navigator.share){ try{await navigator.share({title:'Velix',text:current?.title||'Download this video',url:input.value})}catch{} } else { navigator.clipboard.writeText(input.value); toast('Link copied'); } };
