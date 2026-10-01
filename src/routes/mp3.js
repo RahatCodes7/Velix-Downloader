@@ -88,7 +88,7 @@ router.get('/:id', async (req, res) => {
   proc.on('error', err => {
     hasError = true; clearTimeout(timeout);
     if (!res.headersSent && !headersSent) res.status(500).json({ error: 'Failed to start yt-dlp', details: err.message });
-    else if (!res.writableEnded) res.end();
+    else if (!res.writableEnded) { try { res.destroy(); } catch { try { res.end(); } catch {} } }
   });
   req.on('close', () => { if (proc && !proc.killed) proc.kill('SIGKILL'); });
 
@@ -115,13 +115,15 @@ router.get('/:id', async (req, res) => {
         req.on('close',()=>{ if(!rp.killed) rp.kill(); });
         return;
       }
-      if (headersSent && stdoutStarted) { if (!res.writableEnded) res.end(); return; }
+      if (headersSent && stdoutStarted) { if (!res.writableEnded) { try { res.destroy(); } catch { try { res.end(); } catch {} } } return; }
       if (!stdoutStarted) {
         if (isBot) return safeJson(500,{error:'YouTube bot-check - cookies expired or IP blocked', details:stderr.slice(0,600), hint:'Update cookies.txt with fresh export'});
         if (isFormat) return safeJson(400,{error:'Video format not available', details:stderr.slice(0,600), hint:'Check video ID valid'});
         return safeJson(500,{error:'Failed to process mp3', details:stderr.slice(0,600)});
       }
-      if (!res.writableEnded) res.end(); return;
+      // failed after streaming started but stdout 'end' never fired — destroy, never a truncated file
+      if (!res.writableEnded) { try { res.destroy(); } catch { try { res.end(); } catch {} } }
+      return;
     } else if (!stdoutStarted) {
       return safeJson(500,{error:'0 bytes - no output', details:stderr.slice(0,600)});
     } else console.log('yt-dlp done for', videoId);
@@ -131,7 +133,7 @@ router.get('/:id', async (req, res) => {
     if (proc && !proc.killed) {
       proc.kill('SIGKILL');
       if (!res.headersSent && !headersSent) safeJson(504,{error:'Timeout', details:'yt-dlp took too long'});
-      else if (!res.writableEnded) res.end();
+      else if (!res.writableEnded) { try { res.destroy(); } catch { try { res.end(); } catch {} } }
     }
   }, 90000);
 

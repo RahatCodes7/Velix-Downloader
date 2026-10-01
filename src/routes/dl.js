@@ -80,7 +80,8 @@ router.get('/', async (req, res) => {
     if (proc && !proc.killed) {
       proc.kill('SIGKILL');
       if (!headersSent) { try { res.status(504).json({ error: 'Timeout - video took too long' }); } catch {} }
-      else if (!res.writableEnded) res.end();
+      // timed out MID-STREAM: destroy socket so client sees failure, NOT a truncated "complete" file
+      else if (!res.writableEnded) { try { res.destroy(); } catch { try { res.end(); } catch {} } }
     }
   }, 120000);
 
@@ -90,7 +91,7 @@ router.get('/', async (req, res) => {
     if (!res.writableEnded) res.write(chunk);
   });
   proc.stdout.on('end', () => { clearTimeout(timeout); if (!res.writableEnded) res.end(); });
-  proc.on('error', () => { clearTimeout(timeout); if (!headersSent) { try { res.status(500).json({ error: 'Download failed to start' }); } catch {} } else if (!res.writableEnded) res.end(); });
+  proc.on('error', () => { clearTimeout(timeout); if (!headersSent) { try { res.status(500).json({ error: 'Download failed to start' }); } catch {} } else if (!res.writableEnded) { try { res.destroy(); } catch {} } });
   proc.on('close', code => {
     clearTimeout(timeout);
     if (code !== 0 && !started) {
@@ -101,6 +102,16 @@ router.get('/', async (req, res) => {
         details: msg,
         hint: 'Public video/reel link use koro. Instagram/Facebook private ba login-only post support kore na. Onno ekta public link try koro.'
       });
+    }
+    if (code === 0 && !started) {
+      // 0 bytes with clean exit — tell client plainly instead of an empty 200 file
+      return res.status(500).json({ error: 'Empty download — source gave 0 bytes', details: stderr.slice(0, 300) });
+    }
+    if (code !== 0) {
+      // FAILED MID-STREAM: destroy socket so browser/app reports failure
+      // instead of saving a truncated file (e.g. 47KB video) as success
+      if (!res.writableEnded) { try { res.destroy(); } catch { try { res.end(); } catch {} } }
+      return;
     }
     if (!res.writableEnded) res.end();
   });

@@ -388,6 +388,8 @@ function friendlyErr(e){
     return 'Server blocked this request. Public link use koro, abar try koro.';
   if(/forbidden|^403|blocked\/private/i.test(m))
     return 'This link is private/blocked (403). Public video/reel link try koro.';
+  if(/incomplete/i.test(m))
+    return 'File purota aseni (ordhek download). Abar Download chap daw.';
   if(/failed to fetch|networkerror|load failed/i.test(m))
     return 'Network problem — net check kore abar try koro.';
   return m.slice(0,220) || 'Something went wrong. Try again.';
@@ -484,6 +486,7 @@ async function runDownload(url, mode, f, fname){
   dlAbort = new AbortController();
   const t0 = Date.now();
   let firstByteAt = 0;
+  let got = 0;
   // watchdog: no data in 12s → stop hanging at 0%.
   // Direct mode then AUTO-switches to server so one tap always finishes.
   const watch = setTimeout(()=>{
@@ -502,7 +505,7 @@ async function runDownload(url, mode, f, fname){
     }
     const total = +r.headers.get('content-length') || f.size || 0;
     const reader = r.body.getReader();
-    const chunks = []; let got = 0;
+    const chunks = []; got = 0;
     while(true){
       const { done, value } = await reader.read();
       if(done) break;
@@ -517,6 +520,17 @@ async function runDownload(url, mode, f, fname){
     }
     clearTimeout(watch);
     if(!got) throw new Error('Empty file — source theke data aseni. Onno quality try koro.');
+    // integrity: truncated file (e.g. 47KB video) must NEVER save as success
+    const expected = total || f.size || 0;
+    if(expected && got < expected * 0.9){
+      const err = new Error('incomplete'); err.got = got; err.expected = expected; throw err;
+    }
+    if(f.type !== 'image'){
+      const minBytes = f.type === 'audio' ? 25 * 1024 : 60 * 1024;
+      if(got < minBytes){
+        const err = new Error('incomplete'); err.got = got; throw err;
+      }
+    }
     // save to device — stays on this page, no redirect
     dlStepUI(2); $('dlSub').textContent = 'Device e save hochhe...';
     const blob = new Blob(chunks, { type: MIME[f.ext] || 'application/octet-stream' });
@@ -552,6 +566,18 @@ async function runDownload(url, mode, f, fname){
       return;
     }
     const raw = String((e && e.message) || '');
+    if(/incomplete/i.test(raw) || e.message === 'incomplete'){
+      const gotTxt = fmtMB(e.got || got || 0);
+      if(mode === 'direct'){
+        $('dlSub').textContent = 'File ordhek eseche (' + gotTxt + ') — server diye purno ta anchi...';
+        toast('Ordhek file eseche — server diye purno ta anchi...');
+        return runDownload(proxyUrlFor(f), 'server', f, fname);
+      }
+      $('dlSub').textContent = 'File ordhek eseche (' + gotTxt + ') — abar Download chap daw.';
+      dlStepUI(-1); $('dlCancel').classList.add('hidden');
+      showDlFallback('File purota aseni (' + gotTxt + '). Abar try koro.');
+      return;
+    }
     const blocked = /failed to fetch|networkerror|load failed|typeerror/i.test(raw);
     if(blocked && mode === 'direct'){
       // CORS / network block on direct → auto-switch to server
@@ -559,9 +585,12 @@ async function runDownload(url, mode, f, fname){
       toast('Direct block — server diye anchi...');
       return runDownload(proxyUrlFor(f), 'server', f, fname);
     }
-    $('dlSub').textContent = blocked ? 'Direct connection block/slow.' : friendlyErr(e);
+    $('dlSub').textContent = blocked ? (mode === 'server' ? 'Server connection majhpathe kete geche.' : 'Direct connection block/slow.') : friendlyErr(e);
     dlStepUI(-1); $('dlCancel').classList.add('hidden');
-    if(blocked){ showDlFallback('Source direct connection dichhe na.'); }
+    if(blocked){
+      if(mode === 'direct'){ showDlFallback('Source direct connection dichhe na.'); }
+      else { showDlFallback('Server connection majhpathe kete geche. Abar try koro.'); }
+    }
     else toast(friendlyErr(e));
   } finally { dlAbort = null; }
 }
