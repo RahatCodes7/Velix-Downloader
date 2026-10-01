@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="vbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="0.55" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#vbg)"/>
+  <!-- Velix V -->
+  <path d="M148 148 L256 362 L364 148" fill="none" stroke="#ffffff" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- download badge -->
+  <circle cx="372" cy="372" r="80" fill="#ffffff"/>
+  <g fill="none" stroke="#7c3aed" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M372 332v72"/>
+    <path d="M342 376l30 32 30-32"/>
+  </g>
+</svg>

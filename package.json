@@ -1,0 +1,35 @@
+{
+  "name": "youtube-audio-api",
+  "version": "1.0.0",
+  "description": "Youtube Audio API - fetch metadata, thumbnail, search & mp3 download (128k) - Render ready",
+  "engines": {
+    "node": "20.x"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "ffmpeg-static": "^5.3.0",
+    "fluent-ffmpeg": "^2.1.3",
+    "play-dl": "^1.9.7",
+    "youtubei.js": "^18.0.0",
+    "yt-dlp-exec": "^1.0.2",
+    "yt-search": "^2.13.1"
+  },
+  "allowScripts": {
+    "yt-dlp-exec@1.0.2": true,
+    "ffmpeg-static@5.3.0": true
+  }
+}

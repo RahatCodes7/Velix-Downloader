@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: velix
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SHRUTI_API_URL
+        value: https://api01.shrutibots.site
+      - key: SHRUTI_API_KEY
+        sync: false
+      # Optional: set YT_COOKIES via dashboard (if too large, use YT_COOKIES_URL with Gist raw URL instead)
+      # - key: YT_COOKIES
+      #   sync: false
+      # Alternative for large cookies to avoid "argument list too long":
+      # 1) Create a private Gist with cookies.txt content
+      # 2) Set YT_COOKIES_URL to raw Gist URL: https://gist.githubusercontent.com/.../raw/cookies.txt
+      # - key: YT_COOKIES_URL
+      #   sync: false

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Velix — Download Anything. Anywhere.</title>
+<meta name="description" content="Velix — Fast & Easy Video Downloader. YouTube, TikTok, Instagram, Facebook, Pinterest. Direct download with your own internet. PWA installable.">
+<meta name="theme-color" content="#070b18">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Velix">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>
+tailwind.config = { darkMode: 'class', theme: { extend: { colors: { ink: '#070b18' }, fontFamily: { inter: ['Inter','system-ui','sans-serif'] } } } }
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@600&display=swap');
+body{font-family:'Inter',system-ui,sans-serif;background:#070b18}
+.hand{font-family:'Caveat',cursive}
+.grad-text{background:linear-gradient(90deg,#2ea6ff,#7b5cff,#d63cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad-btn{background:linear-gradient(90deg,#1e9bff,#7b5cff)}
+.grad-btn:hover{filter:brightness(1.1)}
+.glass{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.chip-active{background:#1e9bff!important;color:#fff!important;border-color:#1e9bff!important}
+.light body,.light-mode{background:#f4f6fb!important;color:#111!important}
+.light-mode .glass{background:#fff!important;border-color:#e5e9f2!important;color:#111!important}
+.light-mode .text-white{color:#111!important}
+.light-mode .text-white\/60,.light-mode .text-white\/50,.light-mode .text-white\/40{color:#5b6478!important}
+.platform-btn.active{border-bottom:3px solid #4f7cff}
+.no-scrollbar::-webkit-scrollbar{display:none}
+.no-scrollbar{scrollbar-width:none}
+#installBar{display:none}
+@keyframes float{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-8px) rotate(var(--r,0deg))}}
+.float{animation:float 5s ease-in-out infinite}
+</style>
+</head>
+<body class="bg-[#070b18] text-white min-h-screen antialiased">
+
+<!-- Header -->
+<header class="sticky top-0 z-40 bg-[#070b18]/85 backdrop-blur-xl border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+    <a href="#home" class="flex items-center gap-2.5 shrink-0">
+      <img src="/icons/icon.svg" alt="Velix logo" class="w-10 h-10 rounded-xl shadow-lg shadow-violet-500/30">
+      <div class="leading-tight">
+        <div class="font-extrabold text-xl tracking-tight">Vel<span class="grad-text">ix</span></div>
+        <div class="text-[11px] text-white/50 -mt-0.5">Download Anything. Anywhere.</div>
+      </div>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm text-white/70">
+      <a href="#home" class="text-white font-semibold border-b-2 border-blue-500 pb-1">Home</a>
+      <a href="#sites" class="hover:text-white">Supported Sites</a>
+      <a href="#faq" class="hover:text-white">FAQ</a>
+      <a href="#contact" class="hover:text-white">Contact</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <button id="installBtn" class="hidden text-xs bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-3 py-2 rounded-full"><i class="fa-solid fa-mobile-screen mr-1"></i>Install App</button>
+      <button id="themeBtn" class="w-16 h-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-between px-2 text-xs" aria-label="theme">
+        <i class="fa-solid fa-sun text-amber-300"></i><i class="fa-solid fa-moon text-slate-300"></i>
+      </button>
+      <button id="menuBtn" class="md:hidden w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </div>
+  <div id="mobileMenu" class="hidden md:hidden border-t border-white/10 px-4 py-3 flex gap-4 text-sm text-white/70">
+    <a href="#home" class="text-white font-semibold">Home</a>
+    <a href="#sites">Supported Sites</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+  </div>
+</header>
+
+<!-- PWA install bar (mobile) -->
+<div id="installBar" class="max-w-7xl mx-auto px-4 mt-3">
+  <div class="glass rounded-2xl p-3 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl grad-btn flex items-center justify-center shrink-0"><i class="fa-solid fa-download"></i></div>
+    <div class="flex-1 text-sm"><b>Install Velix</b><div class="text-white/50 text-xs">Add to Home Screen for 1-tap downloads</div></div>
+    <button onclick="installPWA()" class="grad-btn px-4 py-2 rounded-xl text-sm font-bold">Install</button>
+    <button onclick="document.getElementById('installBar').style.display='none'" class="text-white/40 px-2"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+</div>
+
+<!-- Hero -->
+<section id="home" class="relative overflow-hidden">
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute -left-20 top-10 w-64 h-64 bg-blue-600/20 blur-[100px] rounded-full"></div>
+    <div class="absolute right-0 top-0 w-80 h-80 bg-purple-600/20 blur-[100px] rounded-full"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-4 pt-8 md:pt-14 pb-4 relative">
+    <div class="hidden lg:block absolute left-2 top-24 w-56 opacity-90 float" style="--r:-8deg">
+      <div class="glass rounded-2xl p-3 rotate-[-8deg]"><div class="bg-gradient-to-br from-blue-500/40 to-purple-500/20 rounded-xl h-28 flex items-center justify-center"><i class="fa-brands fa-youtube text-4xl text-white/40"></i></div></div>
+      <div class="hand text-2xl text-slate-400 mt-2 ml-4">Multiple<br>Platforms <i class="fa-solid fa-arrow-right text-lg"></i></div>
+    </div>
+    <div class="hidden lg:block absolute right-4 top-16 text-right float" style="--r:8deg">
+      <div class="inline-flex items-center gap-2 glass rounded-2xl px-4 py-2 rotate-[8deg] text-sm font-bold"><span class="text-emerald-400">HD</span><span class="text-white/30">•</span><span class="text-sky-400">4K</span><span class="text-white/30">•</span><span class="text-pink-500">MP3</span></div>
+      <div class="mt-6 text-sky-200/70"><i class="fa-solid fa-cloud-arrow-down text-5xl"></i></div>
+      <div class="hand text-2xl text-slate-400 mt-1">High Quality<br>Downloads</div>
+    </div>
+
+    <div class="text-center max-w-3xl mx-auto">
+      <h1 class="text-3xl md:text-6xl font-extrabold leading-tight tracking-tight">Fast &amp; Easy <span class="grad-text">Video Downloader</span></h1>
+      <p class="text-white/60 mt-3 text-sm md:text-lg">Download videos and audio from YouTube, TikTok, Instagram, Facebook, Pinterest and more.<br class="hidden md:block"> Just paste the link, choose your format and hit download!</p>
+    </div>
+
+    <!-- Search bar -->
+    <div class="max-w-3xl mx-auto mt-6">
+      <div class="flex items-center gap-2 bg-[#0c142c]/90 border border-sky-500/40 rounded-2xl p-1.5 shadow-[0_0_40px_-10px_#2ea6ff66]">
+        <div class="flex-1 flex items-center gap-2.5 px-3 min-w-0">
+          <i class="fa-solid fa-link text-sky-300 shrink-0"></i>
+          <input id="urlInput" type="url" inputmode="url" placeholder="Paste your video link here..." class="w-full bg-transparent outline-none text-sm md:text-base placeholder:text-white/35 py-2.5">
+          <button id="pasteBtn" title="Paste" class="text-white/40 hover:text-white shrink-0 px-1"><i class="fa-regular fa-paste"></i></button>
+        </div>
+        <button id="goBtn" class="grad-btn shrink-0 px-5 md:px-8 py-3 rounded-xl font-bold text-sm md:text-base flex items-center gap-2">Get Link <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+      <div id="detectHint" class="text-center text-xs text-white/40 mt-2 h-4"></div>
+
+      <!-- Platforms -->
+      <div class="flex justify-center gap-3 md:gap-8 mt-3 overflow-x-auto no-scrollbar pb-2 px-2">
+        <button data-p="youtube" class="platform-btn active flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-blue-500">
+          <span class="w-10 h-10 rounded-xl bg-[#ff0000] flex items-center justify-center text-xl"><i class="fa-brands fa-youtube text-white"></i></span>
+          <span class="text-xs md:text-sm">YouTube</span>
+        </button>
+        <button data-p="tiktok" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
+          <span class="w-10 h-10 rounded-xl bg-black border border-white/15 flex items-center justify-center text-xl"><i class="fa-brands fa-tiktok text-white"></i></span>
+          <span class="text-xs md:text-sm">TikTok</span>
+        </button>
+        <button data-p="instagram" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
+          <span class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)"><i class="fa-brands fa-instagram text-white"></i></span>
+          <span class="text-xs md:text-sm">Instagram</span>
+        </button>
+        <button data-p="facebook" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
+          <span class="w-10 h-10 rounded-xl bg-[#1877f2] flex items-center justify-center text-xl"><i class="fa-brands fa-facebook-f text-white"></i></span>
+          <span class="text-xs md:text-sm">Facebook</span>
+        </button>
+        <button data-p="pinterest" class="platform-btn flex flex-col items-center gap-1.5 min-w-[72px] pb-2 border-b-[3px] border-transparent">
+          <span class="w-10 h-10 rounded-xl bg-[#e60023] flex items-center justify-center text-xl"><i class="fa-brands fa-pinterest text-white"></i></span>
+          <span class="text-xs md:text-sm">Pinterest</span>
+        </button>
+        <button onclick="toast('X (Twitter) coming soon — YT / TT / IG / FB / Pinterest supported')" class="flex flex-col items-center gap-1.5 min-w-[72px] pb-2 opacity-70">
+          <span class="w-10 h-10 rounded-xl bg-black border border-white/15 flex items-center justify-center text-xl font-bold">𝕏</span>
+          <span class="text-xs md:text-sm">X (Twitter)</span>
+        </button>
+      </div>
+      <div class="flex gap-2 justify-center flex-wrap mt-2 text-[11px]">
+        <span class="text-white/35 w-full text-center sm:w-auto">Try:</span>
+        <button class="sample px-3 py-1 bg-white/10 rounded-full hover:bg-white/20" data-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ">YT sample</button>
+        <button class="sample px-3 py-1 bg-white/10 rounded-full hover:bg-white/20" data-url="https://www.tiktok.com/@tiktok/video/7254888186535116078">TikTok sample</button>
+        <button class="sample px-3 py-1 bg-white/10 rounded-full hover:bg-white/20" data-url="https://www.instagram.com/reel/C8xxx/">IG Reel sample</button>
+        <button class="sample px-3 py-1 bg-white/10 rounded-full hover:bg-white/20" data-url="https://www.facebook.com/watch/?v=12345">FB sample</button>
+        <button class="sample px-3 py-1 bg-white/10 rounded-full hover:bg-white/20" data-url="https://www.pinterest.com/pin/123456789/">Pin sample</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="border-t border-white/5 mt-4">
+  <div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-2 md:grid-cols-5 gap-5">
+    <div class="flex md:block gap-3"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-bolt"></i></div><div><b class="text-sm">Fast Download</b><p class="text-xs text-white/50 mt-1">Get your files in seconds with high-speed servers.</p></div></div>
+    <div class="flex md:block gap-3 md:border-l md:border-white/10 md:pl-5"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-shield-halved"></i></div><div><b class="text-sm">High Quality</b><p class="text-xs text-white/50 mt-1">Choose from multiple resolutions and formats.</p></div></div>
+    <div class="flex md:block gap-3 md:border-l md:border-white/10 md:pl-5"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-mobile-screen"></i></div><div><b class="text-sm">Works on Any Device</b><p class="text-xs text-white/50 mt-1">Desktop, tablet or mobile — anytime, anywhere.</p></div></div>
+    <div class="flex md:block gap-3 md:border-l md:border-white/10 md:pl-5"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-shield-heart"></i></div><div><b class="text-sm">Safe &amp; Secure</b><p class="text-xs text-white/50 mt-1">No malware, no tracking, your privacy is our priority.</p></div></div>
+    <div class="flex md:block gap-3 col-span-2 md:col-span-1 md:border-l md:border-white/10 md:pl-5"><div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-cloud"></i></div><div><b class="text-sm">No Installation</b><p class="text-xs text-white/50 mt-1">Use directly from your browser. No software needed.</p></div></div>
+  </div>
+</section>
+
+<!-- Result + Supported -->
+<section class="max-w-7xl mx-auto px-4 pb-8 grid lg:grid-cols-[1fr_340px] gap-4">
+  <div class="glass rounded-2xl p-3 md:p-5 min-h-[280px]">
+    <!-- Loader -->
+    <div id="loader" class="hidden py-14 text-center">
+      <div class="inline-block w-10 h-10 border-[3px] border-white/15 border-t-sky-400 rounded-full animate-spin"></div>
+      <p class="text-white/50 text-sm mt-3" id="loaderText">Fetching video info...</p>
+    </div>
+    <!-- Empty -->
+    <div id="emptyState" class="py-10 text-center">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-white/5 flex items-center justify-center text-2xl text-white/30"><i class="fa-solid fa-link"></i></div>
+      <h3 class="font-bold mt-4">Paste a link to start</h3>
+      <p class="text-white/45 text-sm mt-1 max-w-md mx-auto">Supports YouTube (video / shorts / music), TikTok (no watermark), Instagram (reel / post / story), Facebook (video / reel) &amp; Pinterest (video / image pin). Choose quality then Download Now.</p>
+      <div class="flex gap-2 justify-center mt-4 text-xs">
+        <span class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10"><i class="fa-brands fa-youtube text-red-400 mr-1"></i>MP3 • MP4 4K</span>
+        <span class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10"><i class="fa-brands fa-tiktok mr-1"></i>No watermark</span>
+        <span class="px-3 py-1.5 rounded-full bg-white/5 border border-white/10"><i class="fa-brands fa-instagram text-pink-400 mr-1"></i>Reels</span>
+      </div>
+    </div>
+    <!-- Result card -->
+    <div id="resultCard" class="hidden">
+      <div class="grid md:grid-cols-[320px_1fr] gap-4">
+        <div class="relative rounded-xl overflow-hidden bg-black shrink-0">
+          <img id="rThumb" src="" alt="" class="w-full aspect-video object-cover">
+          <span id="rDur" class="absolute bottom-2 right-2 bg-black/70 px-2 py-0.5 rounded text-xs"></span>
+          <span id="rPlat" class="absolute top-2 left-2 text-[11px] font-bold px-2.5 py-1 rounded-full bg-sky-500">YouTube</span>
+          <button id="previewPlay" class="absolute inset-0 m-auto w-14 h-14 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-2xl hover:scale-105 transition"><i class="fa-solid fa-play ml-1"></i></button>
+        </div>
+        <div class="min-w-0">
+          <h3 id="rTitle" class="font-bold text-base md:text-lg leading-snug line-clamp-2"></h3>
+          <p id="rMeta" class="text-white/45 text-xs md:text-sm mt-1"></p>
+          <p id="rWarn" class="hidden text-amber-300/90 text-xs mt-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2"></p>
+          <div id="qBtns" class="flex flex-wrap gap-2 mt-4"></div>
+          <button id="dlNow" class="grad-btn w-full mt-3 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 text-[15px]"><i class="fa-solid fa-download"></i> Download Now</button>
+          <div class="flex gap-2 mt-2">
+            <button id="copyBtn" class="flex-1 bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10"><i class="fa-regular fa-copy mr-1"></i>Copy link</button>
+            <button id="shareBtn" class="flex-1 bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10"><i class="fa-solid fa-share-nodes mr-1"></i>Share</button>
+            <a id="watchBtn" href="#" target="_blank" class="flex-1 text-center bg-white/5 border border-white/10 py-2.5 rounded-xl text-xs hover:bg-white/10">Open original <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
+          </div>
+          <div id="dlBox" class="hidden mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <div class="flex items-center gap-3">
+              <div id="dlIcon" class="w-10 h-10 rounded-xl grad-btn flex items-center justify-center shrink-0 text-lg"><i class="fa-solid fa-download"></i></div>
+              <div class="flex-1 min-w-0">
+                <div id="dlName" class="text-sm font-bold truncate">file.mp4</div>
+                <div id="dlSub" class="text-xs text-white/50">Preparing...</div>
+              </div>
+              <button id="dlCancel" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg shrink-0">Cancel</button>
+            </div>
+            <div class="mt-3 space-y-1.5 text-xs" id="dlSteps">
+              <div data-s="0" class="step flex items-center gap-2"><span class="dot"></span><span>Source theke direct link toiri</span></div>
+              <div data-s="1" class="step flex items-center gap-2"><span class="dot"></span><span>Tomar internet diye download hochhe</span></div>
+              <div data-s="2" class="step flex items-center gap-2"><span class="dot"></span><span>Device e save hochhe</span></div>
+            </div>
+            <div class="h-2.5 bg-white/10 rounded-full overflow-hidden mt-3"><div id="dlBar" class="h-full w-0 grad-btn transition-all"></div></div>
+            <div class="flex justify-between text-[11px] text-white/50 mt-1"><span id="dlText">0%</span><span id="dlMb"></span></div>
+            <div id="dlDone" class="hidden mt-2 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-3 py-2.5 text-xs text-emerald-200"></div>
+            <div id="dlAlt" class="hidden mt-2 bg-amber-500/10 border border-amber-500/25 rounded-xl px-3 py-2.5 text-xs text-amber-200">
+              <div>Source direct connection block koreche. Nicher button e chap dile file ta browser-e khulbe — sekhan theke save koro. Eta tomar file-eri link, onno kono site noy.</div>
+              <a id="dlAltLink" href="#" target="_blank" rel="noopener" class="inline-block mt-2 grad-btn px-4 py-2 rounded-xl font-bold text-white"><i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>File kholo</a>
+            </div>
+          </div>
+          <div id="ytEmbedWrap" class="hidden mt-3 aspect-video bg-black rounded-xl overflow-hidden"><iframe id="ytEmbed" class="w-full h-full" frameborder="0" allowfullscreen></iframe></div>
+        </div>
+      </div>
+    </div>
+    <!-- History -->
+    <div id="histWrap" class="hidden mt-4 pt-4 border-t border-white/10">
+      <div class="flex items-center justify-between"><b class="text-sm">Recent downloads</b><button onclick="clearHist()" class="text-xs text-white/40 hover:text-white">Clear</button></div>
+      <div id="hist" class="flex gap-2 mt-2 overflow-x-auto no-scrollbar pb-1"></div>
+    </div>
+  </div>
+
+  <aside id="sites" class="glass rounded-2xl p-5 h-fit">
+    <h3 class="font-bold flex items-center gap-2"><i class="fa-solid fa-globe text-sky-400"></i> Supported Sites</h3>
+    <div class="mt-3 space-y-1 text-sm">
+      <a href="#home" onclick="setPlat('youtube')" class="flex items-center gap-3 py-2.5 border-b border-white/5 hover:bg-white/5 rounded-lg px-2"><span class="w-8 h-8 rounded-full bg-[#ff0000] flex items-center justify-center"><i class="fa-brands fa-youtube text-white"></i></span><span class="font-semibold w-24">YouTube</span><span class="flex-1 text-white/40 text-xs">Videos, Shorts, Playlists</span><i class="fa-solid fa-chevron-right text-white/30 text-xs"></i></a>
+      <a href="#home" onclick="setPlat('tiktok')" class="flex items-center gap-3 py-2.5 border-b border-white/5 hover:bg-white/5 rounded-lg px-2"><span class="w-8 h-8 rounded-full bg-black border border-white/20 flex items-center justify-center"><i class="fa-brands fa-tiktok"></i></span><span class="font-semibold w-24">TikTok</span><span class="flex-1 text-white/40 text-xs">Videos, No watermark</span><i class="fa-solid fa-chevron-right text-white/30 text-xs"></i></a>
+      <a href="#home" onclick="setPlat('instagram')" class="flex items-center gap-3 py-2.5 border-b border-white/5 hover:bg-white/5 rounded-lg px-2"><span class="w-8 h-8 rounded-full flex items-center justify-center" style="background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)"><i class="fa-brands fa-instagram text-white"></i></span><span class="font-semibold w-24">Instagram</span><span class="flex-1 text-white/40 text-xs">Posts, Reels, Stories</span><i class="fa-solid fa-chevron-right text-white/30 text-xs"></i></a>
+      <a href="#home" onclick="setPlat('facebook')" class="flex items-center gap-3 py-2.5 border-b border-white/5 hover:bg-white/5 rounded-lg px-2"><span class="w-8 h-8 rounded-full bg-[#1877f2] flex items-center justify-center"><i class="fa-brands fa-facebook-f text-white"></i></span><span class="font-semibold w-24">Facebook</span><span class="flex-1 text-white/40 text-xs">Videos, Reels</span><i class="fa-solid fa-chevron-right text-white/30 text-xs"></i></a>
+      <a href="#home" onclick="setPlat('pinterest')" class="flex items-center gap-3 py-2.5 border-b border-white/5 hover:bg-white/5 rounded-lg px-2"><span class="w-8 h-8 rounded-full bg-[#e60023] flex items-center justify-center"><i class="fa-brands fa-pinterest"></i></span><span class="font-semibold w-24">Pinterest</span><span class="flex-1 text-white/40 text-xs">Videos, Images</span><i class="fa-solid fa-chevron-right text-white/30 text-xs"></i></a>
+      <div class="flex items-center gap-3 py-2.5 px-2 opacity-50"><span class="w-8 h-8 rounded-full bg-black border border-white/20 flex items-center justify-center text-xs font-bold">𝕏</span><span class="font-semibold w-24">X (Twitter)</span><span class="flex-1 text-white/40 text-xs">Soon</span></div>
+    </div>
+    <div class="mt-4 bg-gradient-to-br from-sky-500/15 to-purple-500/15 border border-sky-500/20 rounded-xl p-3 text-xs text-white/60">
+      <b class="text-white">Tip for mobile:</b> Tap <b>Install App</b> or browser menu → <b>Add to Home Screen</b>. Then paste any share-link from YT / TikTok / IG / FB / Pinterest directly here.
+    </div>
+  </aside>
+</section>
+
+<!-- How -->
+<section class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-3 pb-8">
+  <div class="glass rounded-2xl p-5"><div class="text-sky-400 font-extrabold text-sm">STEP 1</div><b>Copy video link</b><p class="text-white/50 text-sm mt-1">Open YouTube / TikTok / Instagram / Facebook / Pinterest → Share → Copy link.</p></div>
+  <div class="glass rounded-2xl p-5"><div class="text-violet-400 font-extrabold text-sm">STEP 2</div><b>Paste &amp; Get Link</b><p class="text-white/50 text-sm mt-1">Paste above and press Get Link. We fetch title, thumbnail &amp; qualities.</p></div>
+  <div class="glass rounded-2xl p-5"><div class="text-pink-400 font-extrabold text-sm">STEP 3</div><b>Download Now</b><p class="text-white/50 text-sm mt-1">Pick quality and tap Download Now — file tomar nijer internet diye sorasori download hobe, ei page ei.</p></div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="max-w-4xl mx-auto px-4 pb-8">
+  <h2 class="text-2xl font-extrabold text-center">FAQ</h2>
+  <div class="mt-4 space-y-2" id="faqBox">
+    <details class="glass rounded-xl px-4 py-3"><summary class="font-semibold text-sm cursor-pointer">Which sites are supported?</summary><p class="text-white/55 text-sm mt-2">YouTube (video, shorts, music → MP3/MP4), TikTok (HD, no watermark), Instagram (reel, post, story — public only), Facebook (video, reel — public only), Pinterest (video pin + image pin HD).</p></details>
+    <details class="glass rounded-xl px-4 py-3"><summary class="font-semibold text-sm cursor-pointer">How to install as app (PWA)?</summary><p class="text-white/55 text-sm mt-2">Android Chrome: menu ⋮ → Add to Home Screen / Install. iPhone Safari: Share → Add to Home Screen. Then it opens fullscreen like a native app + works from share.</p></details>
+    <details class="glass rounded-xl px-4 py-3"><summary class="font-semibold text-sm cursor-pointer">Why does Instagram / Facebook private link fail?</summary><p class="text-white/55 text-sm mt-2">Private / login-only / friends-only posts can't be fetched. Use a public link. Business/creator public reels work best.</p></details>
+    <details class="glass rounded-xl px-4 py-3"><summary class="font-semibold text-sm cursor-pointer">Is it free? Quality?</summary><p class="text-white/55 text-sm mt-2">Yes, free. YouTube via fast Shruti API (audio + video). Others via server: MP4 HD up to 1080p where available + 128k MP3.</p></details>
+    <details class="glass rounded-xl px-4 py-3"><summary class="font-semibold text-sm cursor-pointer">Render hosting notes?</summary><p class="text-white/55 text-sm mt-2">Deploy with Docker (ffmpeg + yt-dlp preinstalled). Free tier sleeps — first request may take ~30s. Downloads go direct from source to your device — server sudhu link toiri kore, file server diye jay na. Set <code>SHRUTI_API_URL</code> + <code>SHRUTI_API_KEY</code> env vars for fastest YouTube.</p></details>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="max-w-4xl mx-auto px-4 pb-10">
+  <div class="glass rounded-2xl p-6 text-center">
+    <h2 class="text-xl font-extrabold">Contact / Report a link</h2>
+    <p class="text-white/50 text-sm mt-1">Link not working? Send the URL + platform. We fix extractors fast.</p>
+    <div class="flex flex-col sm:flex-row gap-2 mt-4 max-w-lg mx-auto">
+      <input id="cMsg" placeholder="Paste broken link or message..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-sky-500">
+      <button onclick="contactGo()" class="grad-btn px-6 py-3 rounded-xl font-bold text-sm">Send</button>
+    </div>
+    <p class="text-white/30 text-xs mt-4">❤ Free • Fast • Reliable — <a href="/api/health" class="underline">API Health</a> • <a href="/api" class="underline">API Docs</a></p>
+  </div>
+</section>
+
+<footer class="border-t border-white/10 py-5 text-center text-white/30 text-xs px-4">
+  Velix • YouTube • TikTok • Instagram • Facebook • Pinterest • Direct download • Host on Render<br>
+  <span class="text-white/20">For personal use. Respect creators &amp; platform TOS.</span>
+</footer>
+
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden"><div class="bg-[#101a33] border border-white/15 px-5 py-3 rounded-2xl text-sm shadow-2xl" id="toastMsg"></div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const input = $('urlInput'), goBtn = $('goBtn');
+let current = null, selectedFmt = null, deferredPrompt = null;
+
+function toast(m){ const t=$('toast'); $('toastMsg').textContent=m; t.classList.remove('hidden'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.add('hidden'),2800); }
+function contactGo(){ const v=$('cMsg').value.trim(); if(!v) return toast('Write a message first'); toast('Thanks! Saved locally.'); try{ let a=JSON.parse(localStorage.getItem('ad_contact')||'[]'); a.push({msg:v.slice(0,500),at:Date.now()}); a=a.slice(-20); try{ localStorage.setItem('ad_contact',JSON.stringify(a)); }catch{ localStorage.removeItem('ad_hist'); localStorage.setItem('ad_contact',JSON.stringify(a.slice(-10))); } $('cMsg').value=''; }catch{} }
+
+$('menuBtn').onclick = ()=> $('mobileMenu').classList.toggle('hidden');
+$('themeBtn').onclick = ()=>{ document.documentElement.classList.toggle('dark'); document.body.classList.toggle('light-mode'); toast(document.body.classList.contains('light-mode')?'Light mode':'Dark mode'); };
+
+// PWA install
+window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; $('installBtn').classList.remove('hidden'); $('installBar').style.display='block'; });
+async function installPWA(){ if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; } else { toast('Browser menu → Add to Home Screen'); } }
+$('installBtn').onclick = installPWA;
+if ('serviceWorker' in navigator) { window.addEventListener('load', ()=> navigator.serviceWorker.register('/sw.js').catch(()=>{})); }
+
+// platform detect
+function detect(u=''){ u=u.toLowerCase(); if(!u) return null; if(u.includes('youtu')||/^[a-z0-9_-]{11}$/.test(u.trim())) return 'youtube'; if(u.includes('tiktok')||u.includes('vt.tiktok')) return 'tiktok'; if(u.includes('instagram')) return 'instagram'; if(u.includes('faceb')||u.includes('fb.')) return 'facebook'; if(u.includes('pinterest')||u.includes('pin.it')) return 'pinterest'; return null; }
+function setPlat(p){ document.querySelectorAll('.platform-btn').forEach(b=>{ const on=b.dataset.p===p; b.classList.toggle('active',on); b.style.borderColor=on?'#3b82f6':'transparent'; }); }
+document.querySelectorAll('.platform-btn').forEach(b=> b.onclick=()=>{ setPlat(b.dataset.p); input.focus(); });
+input.addEventListener('input', ()=>{ const p=detect(input.value); $('detectHint').textContent = p ? 'Detected: '+p.charAt(0).toUpperCase()+p.slice(1)+' ✓' : (input.value.length>8?'Paste a YouTube / TikTok / Instagram / Facebook / Pinterest link':''); if(p) setPlat(p); });
+$('pasteBtn').onclick = async ()=>{ try{ const t=await navigator.clipboard.readText(); if(t){ input.value=t.trim(); input.dispatchEvent(new Event('input')); toast('Pasted!'); } }catch{ toast('Long-press → Paste'); input.focus(); } };
+document.querySelectorAll('.sample').forEach(b=> b.onclick=()=>{ input.value=b.dataset.url; input.dispatchEvent(new Event('input')); doFetch(); });
+input.addEventListener('keydown', e=>{ if(e.key==='Enter') doFetch(); });
+goBtn.onclick = doFetch;
+
+async function doFetch(){
+  const url = input.value.trim();
+  if(!url) return toast('Paste a video link first');
+  if(!/^https?:\/\//i.test(url) && !/^[a-zA-Z0-9_-]{11}$/.test(url)) return toast('That does not look like a link');
+  $('emptyState').classList.add('hidden'); $('resultCard').classList.add('hidden'); $('loader').classList.remove('hidden');
+  $('loaderText').textContent = 'Fetching video info...';
+  try{
+    const r = await fetch('/api/info?url='+encodeURIComponent(url));
+    const d = await readJsonSafe(r); // never throws SyntaxError — always friendly message
+    if(!r.ok) throw new Error(d.error || d.details || ('Server error '+r.status));
+    current = d; renderResult(d); saveHist(d);
+  }catch(e){ $('loader').classList.add('hidden'); $('emptyState').classList.remove('hidden'); toast(friendlyErr(e)); }
+  finally{ $('loader').classList.add('hidden'); }
+}
+
+// Read a fetch Response as JSON WITHOUT crashing on plain-text bodies
+// (proxies/WAFs sometimes return text like "Forbidden." instead of JSON)
+async function readJsonSafe(r){
+  const ct = (r.headers.get('content-type')||'').toLowerCase();
+  if(ct.includes('application/json')){
+    try{ return await r.json(); }catch{ return { error:'Bad server response. Try again.' }; }
+  }
+  const t = ((await r.text())||'').trim().slice(0,300);
+  if(!t) return { error:'Server error '+r.status+'. Try again.' };
+  if(t.startsWith('<')) return { error:'Server error '+r.status+'. Try again in a minute.' };
+  return { error: t };
+}
+
+// Convert raw/technical errors into user-friendly messages
+function friendlyErr(e){
+  const m = String((e && e.message) || e || '');
+  if(/unexpected token|is not valid json|bad server response/i.test(m))
+    return 'Server blocked this request. Public link use koro, abar try koro.';
+  if(/forbidden|^403|blocked\/private/i.test(m))
+    return 'This link is private/blocked (403). Public video/reel link try koro.';
+  if(/failed to fetch|networkerror|load failed/i.test(m))
+    return 'Network problem — net check kore abar try koro.';
+  return m.slice(0,220) || 'Something went wrong. Try again.';
+}
+
+function fmtViews(v){ if(v==null) return ''; if(v>=1e6) return (v/1e6).toFixed(1)+'M views'; if(v>=1e3) return (v/1e3).toFixed(1)+'K views'; return v+' views'; }
+
+function renderResult(d){
+  $('resultCard').classList.remove('hidden');
+  $('rThumb').src = d.thumbnail || '/icons/icon-512.png';
+  $('rDur').textContent = d.durationFormatted || '';
+  $('rPlat').textContent = (d.platform||'video').charAt(0).toUpperCase()+(d.platform||'video').slice(1);
+  $('rTitle').textContent = d.title || 'Untitled';
+  $('rMeta').textContent = [d.uploader, fmtViews(d.views), d.durationFormatted?('• '+d.durationFormatted):''].filter(Boolean).join(' ');
+  $('watchBtn').href = d.url || input.value;
+  if(d.warning){ $('rWarn').textContent='⚠ '+d.warning; $('rWarn').classList.remove('hidden'); } else $('rWarn').classList.add('hidden');
+  if(d.embed){ $('ytEmbedWrap').classList.remove('hidden'); $('ytEmbed').src=d.embed; } else { $('ytEmbedWrap').classList.add('hidden'); $('ytEmbed').src=''; }
+  const qb=$('qBtns'); qb.innerHTML='';
+  selectedFmt = (d.formats || []).find(f=>f.recommended) || (d.formats || [])[0] || null;
+  if(!selectedFmt){
+    qb.innerHTML = '<div class="text-xs text-amber-200 bg-amber-500/10 border border-amber-500/25 rounded-xl px-3 py-2.5">Ei link er direct download option pawa jayni. Public link kina check kore abar try koro.</div>';
+    $('dlNow').classList.add('opacity-40');
+  } else $('dlNow').classList.remove('opacity-40');
+  (d.formats || []).forEach((f,i)=>{
+    const b=document.createElement('button');
+    b.className='px-4 py-2 rounded-xl text-xs font-bold border transition '+(f===selectedFmt?'chip-active bg-sky-500 border-sky-500':'bg-white/5 border-white/10 text-white/70 hover:bg-white/10');
+    b.textContent=f.label+(f.size?' • '+(f.size/1048576).toFixed(1)+'MB':'');
+    b.onclick=()=>{ selectedFmt=f; [...qb.children].forEach((c,j)=>{ c.className='px-4 py-2 rounded-xl text-xs font-bold border transition '+(d.formats[j]===f?'chip-active bg-sky-500 border-sky-500':'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'); }); };
+    qb.appendChild(b);
+  });
+  $('resultCard').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+let dlAbort = null;
+$('dlCancel').onclick = ()=>{ if(dlAbort) dlAbort.abort(); };
+function dlStepUI(active){
+  // active: 0..2 running, 3 = all done, -1 = error
+  document.querySelectorAll('#dlSteps .step').forEach(el=>{
+    const n = +el.dataset.s, dot = el.querySelector('.dot');
+    const base = 'w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] shrink-0 ';
+    if(active === 3 || n < active){
+      el.className = 'step flex items-center gap-2 text-emerald-300 font-semibold';
+      dot.className = base + 'bg-emerald-500 text-white'; dot.innerHTML = '<i class="fa-solid fa-check"></i>';
+    } else if(n === active){
+      el.className = 'step flex items-center gap-2 text-white font-semibold';
+      dot.className = base + 'border border-sky-400'; dot.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse inline-block"></span>';
+    } else {
+      el.className = 'step flex items-center gap-2 text-white/35';
+      dot.className = base + 'border border-white/20'; dot.innerHTML = '';
+    }
+  });
+  if(active === -1){
+    const el = document.querySelector('#dlSteps .step[data-s="1"]');
+    if(el){ el.className = 'step flex items-center gap-2 text-red-300 font-semibold'; const d = el.querySelector('.dot'); d.className = 'w-4 h-4 rounded-full inline-flex items-center justify-center text-[9px] shrink-0 bg-red-500 text-white'; d.innerHTML = '<i class="fa-solid fa-xmark"></i>'; }
+  }
+}
+const MIME = { mp4:'video/mp4', mov:'video/quicktime', webm:'video/webm', mp3:'audio/mpeg', m4a:'audio/mp4', jpg:'image/jpeg', png:'image/png', webp:'image/webp' };
+function fmtMB(b){ return (b/1048576).toFixed(1)+' MB'; }
+function fmtSpeed(bps){ if(bps>1048576) return (bps/1048576).toFixed(1)+' MB/s'; return Math.max(1,Math.round(bps/1024))+' KB/s'; }
+
+$('dlNow').onclick = async ()=>{
+  if(!current) return toast('Age ekta link paste kore Get Link chap daw');
+  if(!selectedFmt){ toast('Ei link er download option pawa jayni — public link try koro'); return; }
+  const f = selectedFmt;
+  const directUrl = f.url; // always source-direct: user's internet, never the server, never a redirect site
+  const base = ((current.title||'velix-download').replace(/[^\w\-\s\u0980-\u09FF]+/g,'').trim().slice(0,50)) || 'velix-download';
+  const fname = base + '.' + (f.ext || 'mp4');
+
+  // reset UI
+  $('dlBox').classList.remove('hidden'); $('dlDone').classList.add('hidden'); $('dlAlt').classList.add('hidden');
+  $('dlCancel').classList.remove('hidden'); $('dlBar').style.width = '2%';
+  $('dlName').textContent = fname; $('dlText').textContent = '0%'; $('dlMb').textContent = '';
+  $('dlSub').textContent = 'Source er sathe connect hochhe...'; dlStepUI(0);
+  $('dlBox').scrollIntoView({behavior:'smooth', block:'nearest'});
+
+  dlAbort = new AbortController();
+  const t0 = Date.now();
+  try{
+    dlStepUI(1);
+    $('dlSub').textContent = 'Tomar internet diye download hochhe...';
+    const r = await fetch(directUrl, { signal: dlAbort.signal });
+    if(!r.ok){
+      const j = await readJsonSafe(r);
+      const err = new Error(j.error || j.details || ('Source error ' + r.status));
+      err.status = r.status; throw err;
+    }
+    const total = +r.headers.get('content-length') || f.size || 0;
+    const reader = r.body.getReader();
+    const chunks = []; let got = 0;
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      chunks.push(value); got += value.length;
+      const secs = Math.max(0.5, (Date.now() - t0) / 1000);
+      if(total){ const pc = Math.min(99, Math.round(got / total * 100)); $('dlBar').style.width = pc + '%'; $('dlText').textContent = pc + '%'; }
+      else { $('dlBar').style.width = '65%'; $('dlText').textContent = fmtMB(got); }
+      $('dlMb').textContent = fmtMB(got) + (total ? ' / ' + fmtMB(total) : '') + ' • ' + fmtSpeed(got / secs);
+      $('dlSub').textContent = 'Download hochhe... ' + fmtMB(got) + (total ? ' / ' + fmtMB(total) : '');
+    }
+    // save to device — stays on this page, no redirect
+    dlStepUI(2); $('dlSub').textContent = 'Device e save hochhe...';
+    const blob = new Blob(chunks, { type: MIME[f.ext] || 'application/octet-stream' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 10000);
+
+    dlStepUI(3);
+    $('dlBar').style.width = '100%'; $('dlText').textContent = '100%';
+    $('dlMb').textContent = fmtMB(got);
+    $('dlSub').textContent = 'Complete ✓ — ' + fmtMB(got);
+    $('dlCancel').classList.add('hidden');
+    const dd = $('dlDone'); dd.classList.remove('hidden');
+    dd.innerHTML = '<b>✓ Download complete!</b><br>File tomar internet diye sorasori download hoyeche: <b>' + fname.replace(/</g,'&lt;') + '</b> (' + fmtMB(got) + '). Phone er <b>Downloads / Gallery</b> te check koro.';
+    toast('Download complete ✓');
+  }catch(e){
+    if(e.name === 'AbortError'){ $('dlSub').textContent = 'Cancel kora hoyeche.'; dlStepUI(-1); $('dlCancel').classList.add('hidden'); return; }
+    const raw = String((e && e.message) || '');
+    const blocked = /failed to fetch|networkerror|load failed|typeerror/i.test(raw);
+    $('dlSub').textContent = blocked ? 'Direct connection block hoyeche.' : raw.slice(0,160);
+    dlStepUI(-1); $('dlCancel').classList.add('hidden');
+    if(blocked){
+      $('dlAlt').classList.remove('hidden'); $('dlAltLink').href = directUrl;
+      toast('Direct block — File kholo button use koro');
+    } else toast(friendlyErr(e));
+  } finally { dlAbort = null; }
+};
+$('copyBtn').onclick=()=>{ navigator.clipboard.writeText(input.value); toast('Link copied'); };
+$('shareBtn').onclick=async()=>{ if(navigator.share){ try{await navigator.share({title:'Velix',text:current?.title||'Download this video',url:input.value})}catch{} } else { navigator.clipboard.writeText(input.value); toast('Link copied'); } };
+$('previewPlay').onclick=()=>{ if(current?.embed){ $('ytEmbedWrap').classList.remove('hidden'); $('ytEmbed').src=current.embed+'?autoplay=1'; $('ytEmbedWrap').scrollIntoView({behavior:'smooth'}); } else toast('Preview only for YouTube'); };
+
+// history
+function saveHist(d){ try{ let h=JSON.parse(localStorage.getItem('ad_hist')||'[]'); h=[{t:(d.title||'').slice(0,80),th:d.thumbnail,u:input.value.slice(0,300),p:d.platform,at:Date.now()},...h.filter(x=>x.u!==input.value)].slice(0,12); try{ localStorage.setItem('ad_hist',JSON.stringify(h)); }catch{ localStorage.removeItem('ad_contact'); localStorage.setItem('ad_hist',JSON.stringify(h.slice(0,6))); } renderHist(); }catch{} }
+function renderHist(){ try{ const h=JSON.parse(localStorage.getItem('ad_hist')||'[]'); if(!h.length) return; $('histWrap').classList.remove('hidden'); $('hist').innerHTML=h.map((x,i)=>`<button onclick="reGo(${i})" class="shrink-0 w-36 text-left glass rounded-xl overflow-hidden"><img src="${x.th||'/icons/icon-192.png'}" class="w-full h-20 object-cover"><div class="p-2 text-[11px] font-semibold line-clamp-2 leading-tight">${(x.t||'Video').slice(0,60)}</div></button>`).join(''); window._h=h; }catch{} }
+function reGo(i){ const x=(window._h||[])[i]; if(!x) return; input.value=x.u; input.dispatchEvent(new Event('input')); doFetch(); }
+function clearHist(){ localStorage.removeItem('ad_hist'); $('histWrap').classList.add('hidden'); }
+renderHist();
+// share_target + ?url= autofill (PWA share)
+(function(){ try{ const q=new URLSearchParams(location.search); const s=q.get('url')||q.get('share')||q.get('text'); if(s && /https?:\/\//.test(s)){ const m=s.match(/https?:\/\/\S+/); input.value=(m?m[0]:s).trim(); input.dispatchEvent(new Event('input')); setTimeout(doFetch,600); } }catch{} })();
+</script>
+</body>
+</html>

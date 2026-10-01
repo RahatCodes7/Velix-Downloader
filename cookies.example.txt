@@ -1,0 +1,5 @@
+# Netscape HTTP Cookie File
+# Export youtube.com cookies via "Get cookies.txt LOCALLY" extension
+# Then either: 1) upload as cookies.txt to Render (or) 2) set env var YT_COOKIES with file content (or base64)
+# Example placeholder - replace with real cookies
+# youtube.com TRUE / TRUE 0 VISITOR_INFO1_LIVE abc...
